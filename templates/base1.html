@@ -1,0 +1,24 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block head %}
+    {{ super() }}
+
+{% endblock %}
+
+{% block navbar %}
+    {{ nav.top.render() }}
+{% endblock %}
+
+
+{% block content %}
+    <header>{% block header %}{% endblock %}</header>
+
+{% endblock %}
+
+{% block footer %}
+    <footer>
+
+        Copyright 2016 by <a href="zxbaby.com" >zxbaby</a>
+    </footer>
+
+{% endblock %}

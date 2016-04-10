@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+<h2><p class="text-center text-info">jobs</p></h2>
+<table class="table table-bordered">
+    <div id="toolbar" class="pull-right">
+        <button id="add" class="btn btn-info" >
+            <i class="glyphicon glyphicon-plus"></i> <a href="/snsche/add">Add</a>
+        </button>
+        <button id="remove" class="btn btn-danger" onclick="fuck_job('delete')">
+            <i class="glyphicon glyphicon-remove"></i> <a href="#">Delete</a>
+        </button>
+    </div>
+  <br><br>
+  <thead>
+  <tr class="text-center">
+      <th class="text-center"><input  type="checkbox" id="checkAll"/></th>
+      <th class="text-center">job id</th>
+      <th class="text-center">job trigger</th>
+      <th class="text-center">job next_run_time</th>
+      <th class="text-center">job args</th>
+      <th class="text-center">job state</th>
+      <th class="text-center">action</th>
+  </tr>
+  </thead>
+    <tbody>
+    {% for job in jobs %}
+    <tr>
+        <td class="text-center"><input type="checkbox" name="job" value="{{ job.id }}" /></td>
+        <td class="text-center">{{ job.id }}</td>
+        <td class="text-center">{{ job.trigger }}</td>
+        <td class="text-center">{{ job.next_run_time  }}</td>
+        <td class="text-center">{{ job.args  }}</td>
+        {% if job.next_run_time == None %}
+        <td class="text-center">stopped</td>
+            <td class="text-center" >
+             <button id="add" class="btn btn-info" onclick="fuck_job('resume')">
+            <i class="glyphicon glyphicon-repeat"></i> resume
+        </button>
+        </td>
+            {% else %}
+            <td class="text-center">running</td>
+            <td class="text-center">
+             <button id="add" class="btn btn-warning"  onclick="fuck_job('pause')">
+            <i class="glyphicon glyphicon-pause"></i> pause
+        </button>
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+    {% block scripts %}
+        {{ super() }}
+          <script>
+                $(function () {
+                    $("#checkAll").click(function () {
+                        $("input[name='job']:checkbox").prop("checked", this.checked);
+                    });
+                });
+
+                function fuck_job(action){
+                     var ids = new Array()
+                     $('input[name="job"]:checked').each(function(){
+                         ids.push($(this).val());
+                    });
+                      var idstr = ids.join(',');
+                    alert(idstr);
+                    var action = action;
+                    var url = '';
+                    if(action == 'pause'){
+                       url = '/snsche/pause';
+                    }else if(action=='resume'){
+                        url = '/snsche/resume';
+                    }else if(action == 'delete'){
+                        url = '/snsche/delete';
+                    };
+
+
+                    $.ajax({
+                       type: 'POST',
+                        url: url,
+                        data: idstr,
+                        success: function(data){
+                            alert('successful');
+                            window.location.reload();
+{#                            $.each(ids,function(i,val){#}
+{#                              $('#'+val).text(jobstate);#}
+{#                            });#}
+                        },
+                        error: function(data){
+                            alert('failed');
+                            window.location.reload();
+                        }
+                    });
+                }
+
+        </script>
+
+        {% endblock %}
+{% endblock %}
