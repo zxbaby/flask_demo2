@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from flask import render_template, request, redirect
-
+from flask_login import login_required
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from classes.utils import *
@@ -13,16 +13,19 @@ snsche.start()
 
 
 @snscheduler.route('/')
+@login_required
 def index():
     jobs = snsche.get_jobs()
     return render_template('snscheduler/index.html', jobs=jobs)
 
 @snscheduler.route('/getjob/<id>')
+@login_required
 def getjob(id):
     job = snsche.get_job(id)
     return 'this is %s'%job
 
 @snscheduler.route('/add',methods=['GET', 'POST'])
+@login_required
 def addjob():
     form = SnschedulerForm()
     if request.method == 'GET':
