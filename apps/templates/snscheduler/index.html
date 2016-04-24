@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="page-content">
+						<div class="row">
+							<div class="col-xs-12">
+								<div class="row">
+									<div class="col-xs-12">
+										<div class="table-header text-center">
+											Results for Jobs
+										</div>
+
+										<div class="table-responsive">
+											<table id="sample-table-2" class="table table-striped table-bordered table-hover">
+
+
+												<thead>
+													<tr>
+														<th class="center">
+															<label>
+																<input type="checkbox" class="ace" />
+																<span class="lbl"></span>
+															</label>
+														</th>
+														  <th class="text-center">id</th>
+                                                          <th class="text-center">job trigger</th>
+                                                          <th class="text-center">job next_run_time</th>
+                                                          <th class="text-center">job args</th>
+                                                          <th class="text-center">job state</th>
+                                                          <th class="text-center">action</th>
+													</tr>
+												</thead>
+
+												<tbody>
+
+												{% for job in jobs %}
+                                    <tr>
+                                        <td class="text-center"><input type="checkbox" name="job" value="{{ job.id }}" /></td>
+                                        <td class="text-center">{{ job.id }}</td>
+                                        <td class="text-center">{{ job.trigger }}</td>
+                                        <td class="text-center">{{ job.next_run_time  }}</td>
+                                        <td class="text-center">{{ job.args  }}</td>
+                                        {% if job.next_run_time == None %}
+                                            <td class="text-center" >
+                                             <button id="add" class="btn btn-xs btn-success"  onclick="fuck_job('resume')">
+                                            <i class=""></i> resume
+                                        <td class="text-center">stopped</td>
+                                        </button>
+                                        </td>
+                                            {% else %}
+                                            <td class="text-center">running</td>
+                                            <td class="text-center">
+                                             <button id="add" class="btn btn-xs btn-danger" data-rel="tooltip"  onclick="fuck_job('pause')">
+                                            <i class=""></i> pause
+                                        </button>
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+
+							</div><!-- /.col -->
+						</div><!-- /.row -->
+    </div><!-- /.page-content -->
+
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+			jQuery(function($) {
+				var oTable1 = $('#sample-table-2').dataTable( {
+				"aoColumns": [
+			      { "bSortable": false },
+			      null, null,null, null, null,
+				  { "bSortable": false }
+				] } );
+
+
+				$('table th input:checkbox').on('click' , function(){
+					var that = this;
+					$(this).closest('table').find('tr > td:first-child input:checkbox')
+					.each(function(){
+						this.checked = that.checked;
+						$(this).closest('tr').toggleClass('selected');
+					});
+
+				});
+
+
+				$('[data-rel="tooltip"]').tooltip({placement: tooltip_placement});
+				function tooltip_placement(context, source) {
+					var $source = $(source);
+					var $parent = $source.closest('table')
+					var off1 = $parent.offset();
+					var w1 = $parent.width();
+
+					var off2 = $source.offset();
+					var w2 = $source.width();
+
+					if( parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2) ) return 'right';
+					return 'left';
+				}
+			})
+
+             function fuck_job(action){
+                     var ids = new Array()
+                     $('input[name="job"]:checked').each(function(){
+                         ids.push($(this).val());
+                    });
+                      var idstr = ids.join(',');
+                    alert(idstr);
+                    var action = action;
+                    var url = '';
+                    if(action == 'pause'){
+                       url = '/snsche/pause';
+                    }else if(action=='resume'){
+                        url = '/snsche/resume';
+                    }else if(action == 'delete'){
+                        url = '/snsche/delete';
+                    };
+
+
+                    $.ajax({
+                       type: 'POST',
+                        url: url,
+                        data: idstr,
+                        success: function(data){
+                            alert('successful');
+                            window.location.reload();
+{#                            $.each(ids,function(i,val){#}
+{#                              $('#'+val).text(jobstate);#}
+{#                            });#}
+                        },
+                        error: function(data){
+                            alert('failed');
+                            window.location.reload();
+                        }
+                    });
+                }
+
+		</script>
+
+{% endblock %}
