@@ -1,7 +1,7 @@
 from datetime import timedelta
 
-from flask import render_template, request, redirect
-from flask_login import login_required
+from flask import render_template, request, redirect, g, url_for
+from flask_login import login_required, current_user
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from classes.utils import *
@@ -15,8 +15,10 @@ snsche.start()
 @snscheduler.route('/')
 @login_required
 def index():
+    user = g.user
     jobs = snsche.get_jobs()
-    return render_template('snscheduler/index.html', jobs=jobs)
+    return render_template('snscheduler/index.html', jobs=jobs, user=user)
+
 
 @snscheduler.route('/getjob/<id>')
 @login_required
@@ -27,9 +29,10 @@ def getjob(id):
 @snscheduler.route('/add',methods=['GET', 'POST'])
 @login_required
 def addjob():
+    user = g.user
     form = SnschedulerForm()
     if request.method == 'GET':
-        return render_template('snscheduler/job_add.html', form=form)
+        return render_template('snscheduler/job_add.html', form=form, user=user)
     else:
         dic = {}
         func = job
@@ -73,26 +76,26 @@ def addjob():
             snsche.add_job(func=func, trigger=dic['trigger'], args=[dic['args']], id=dic['id'], run_date=dic['run_date'])
         # dic['jobs'] = snsche.get_jobs()
         print dic
-        return redirect('/snsche')
+        return redirect(url_for('snscheduler.index'))
 
 
 
 
-@snscheduler.route('/snsche/pause', methods=['GET', 'POST'])
+@snscheduler.route('/pause', methods=['GET', 'POST'])
 def pausejob():
     idstr = request.get_data('idstr')
     ids=idstr.split(',')
     map(snsche.pause_job, ids)
     return 'pause job %s!' % ids
 
-@snscheduler.route('/snsche/resume', methods=['GET', 'POST'])
+@snscheduler.route('/resume', methods=['GET', 'POST'])
 def resumejob():
     idstr = request.get_data('idstr')
     ids=idstr.split(',')
     map(snsche.resume_job, ids)
     return 'resume job %s!' % ids
 
-@snscheduler.route('/snsche/delete', methods=['GET', 'POST'])
+@snscheduler.route('/delete', methods=['GET', 'POST'])
 def deletejob():
     idstr = request.get_data('idstr')
     ids=idstr.split(',')
